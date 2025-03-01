@@ -17,7 +17,7 @@ const AppNavigator: React.FC = () => {
   const { userToken } = useAuth();
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       {userToken ? (
         <Stack.Screen name="Home" component={HomeScreen} />
       ) : (
