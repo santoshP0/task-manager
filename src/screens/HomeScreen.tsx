@@ -1,71 +1,138 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
-import { Button, Card, Title } from 'react-native-paper';
-import { useTasks } from '../context/TaskContext';
+import React, { useRef } from "react";
+import { View, StyleSheet, FlatList, RefreshControl, Alert } from "react-native";
+import { Button, Card, Title, IconButton } from "react-native-paper";
+import { useTasks } from "../context/TaskContext";
+import { useAuth } from "../context/AuthContext";
+import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
-const HomeScreen = ({ navigation }: any) => {
-  const { tasks, fetchTasks } = useTasks();
+const HomeScreen = () => {
+  const { tasks, fetchTasks, deleteTask, loading } = useTasks();
+  const { logout } = useAuth();
+  const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetchTasks();
-      console.log(JSON.stringify(response));
-    };
-  
-    fetchData();
-  }, []);
-  
-
-  const handleRefresh = () => {
-    const fetchData = async () => {
-        const response = await fetchTasks();
-        console.log(JSON.stringify(response));
-      };
-    
-      fetchData();
+  const confirmDelete = (id: string) => {
+    Alert.alert("Delete Task", "Are you sure you want to delete this task?", [
+      { text: "Cancel", style: "cancel", onPress: () => closeSwipe(id) },
+      {
+        text: "Delete",
+        onPress: async () => {
+          await deleteTask(id);
+          closeSwipe(id);
+        },
+        style: "destructive",
+      },
+    ]);
   };
 
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Logout", onPress: logout, style: "destructive" },
+    ]);
+  };
+
+  const closeSwipe = (id: string) => {
+    if (swipeableRefs.current[id]) {
+      swipeableRefs.current[id]?.close();
+    }
+  };
+
+  const renderRightActions = (id: string) => (
+    <View style={styles.deleteContainer}>
+      <IconButton
+        icon="trash-can"
+        size={30}
+        iconColor="white"
+        onPress={() => confirmDelete(id)}
+      />
+    </View>
+  );
+
+  const renderSwipeableRow = ({ item }: any) => (
+    <GestureHandlerRootView>
+      <Swipeable
+        ref={(ref) => (swipeableRefs.current[item.id] = ref)}
+        renderRightActions={() => renderRightActions(item._id)}
+      >
+        <Card style={styles.card} onPress={() => console.log("task clicked")}>
+          <Card.Content>
+            <Title style={styles.taskTitle}>
+              <FontAwesome6 name="clipboard-list" size={18} color="black" /> {item.title}
+            </Title>
+          </Card.Content>
+        </Card>
+      </Swipeable>
+    </GestureHandlerRootView>
+  );
+
   return (
-      <View style={styles.container}>
-          <Title style={styles.title}>Tasks</Title>
-          <Button mode="contained" onPress={() => {
-            // navigation.navigate('AddTask')
-            console.log("add clicked")
-          }}>
-              Add Task
-          </Button>
-          <FlatList
-              data={tasks}
-              keyExtractor={(item: any) => item._id}
-              renderItem={({ item }) => (
-                  <Card style={styles.card} onPress={() => {
-                    // navigation.navigate('TaskDetails', { task: item })
-                    console.log("task clicked");
-                  }}>
-                      <Card.Content>
-                          <Title>{item.title}</Title>
-                      </Card.Content>
-                  </Card>
-              )}
-              refreshControl={
-                  <RefreshControl refreshing={false} onRefresh={handleRefresh} />
-              }
-          />
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Title style={styles.title}>Tasks</Title>
+        <IconButton
+          icon={() => <FontAwesome6 name="right-from-bracket" size={22} color="black" />}
+          onPress={handleLogout}
+          style={styles.logoutButton}
+        />
       </View>
+
+      <Button
+        mode="contained"
+        icon={() => <FontAwesome6 name="plus" size={18} color="white" />}
+        onPress={() => console.log("add clicked")}
+        style={styles.addButton}
+      >
+        Add Task
+      </Button>
+
+      <FlatList
+        data={tasks}
+        keyExtractor={(item: any) => item._id}
+        renderItem={renderSwipeableRow}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchTasks} />}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 50,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
   title: {
-    textAlign: 'center',
-    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  logoutButton: {
+    marginRight: 5,
+  },
+  addButton: {
+    marginBottom: 15,
   },
   card: {
     marginBottom: 10,
+    elevation: 3,
+    borderRadius: 10,
+  },
+  taskTitle: {
+    fontSize: 16,
+  },
+  deleteContainer: {
+    backgroundColor: "red",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    height: "80%",
+    borderRadius: 10,
   },
 });
 
