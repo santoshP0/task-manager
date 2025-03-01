@@ -1,13 +1,14 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
-import { fakeAuthAPI } from '../services/authService';
+import { LoginAuth } from '../services/authService';
 import Loader from '../components/Loader';
 
 interface AuthContextType {
   userToken: string | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,11 +31,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (username: string, password: string) => {
     try {
       setLoading(true);
-      const response = await fakeAuthAPI(username, password);
-      await AsyncStorage.setItem('userToken', response.token);
-      setUserToken(response.token);
-      setLoading(false);
+      const response = await LoginAuth(username, password);
+      if(response.status === 200) {
+          await AsyncStorage.setItem('userToken', response.token);
+          setUserToken(response.token);
+        }
+        setLoading(false);
     } catch (error: any) {
+      setLoading(false);
       alert('Login Failed: ' + error.message);
     }
   };
@@ -48,7 +52,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return <Loader />;
   }
 
-  return <AuthContext.Provider value={{ userToken, login, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ userToken, login, logout, loading }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextType => {

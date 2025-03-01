@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import * as SplashScreen from 'expo-splash-screen';
+import { TaskProvider } from '../context/TaskContext';
 
 type RootStackParamList = {
   Login: undefined;
@@ -19,7 +20,14 @@ const AppNavigator: React.FC = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {userToken ? (
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Home">
+          {() => (
+            <TaskProvider>
+              <HomeScreen />
+            </TaskProvider>
+          )}
+        </Stack.Screen>
+
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />
       )}
