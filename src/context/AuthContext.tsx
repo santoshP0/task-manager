@@ -37,23 +37,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           await AsyncStorage.setItem('userToken', response.token);
           setUserToken(response.token);
         }
-        setLoading(false);
     } catch (error: any) {
-      setLoading(false);
       alert('Login Failed: ' + error.message);
+    }finally {
+      setLoading(false);
     }
   };
   const signup = async (username: string, email: string, password: string) => {
     try {
       setLoading(true);
       const response = await SignupAuth(username, email, password);
+      console.log(response)
       if(response.status === 200) {
-
+          alert(response.message);
         }
-        setLoading(false);
     } catch (error: any) {
-      setLoading(false);
       alert('signup Failed: ' + error.message);
+    }finally {
+      setLoading(false);
     }
   };
 

@@ -5,10 +5,12 @@ import { useTasks } from "../context/TaskContext";
 import { useAuth } from "../context/AuthContext";
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { useNavigation } from "@react-navigation/native";
 
 const HomeScreen = () => {
   const { tasks, fetchTasks, deleteTask, loading } = useTasks();
   const { logout } = useAuth();
+  const navigation: any = useNavigation();
   const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
 
   const confirmDelete = (id: string) => {
@@ -80,7 +82,9 @@ const HomeScreen = () => {
       <Button
         mode="contained"
         icon={() => <FontAwesome6 name="plus" size={18} color="white" />}
-        onPress={() => console.log("add clicked")}
+        onPress={() => {
+          navigation.navigate("TaskDetails");
+        }}
         style={styles.addButton}
       >
         Add Task
