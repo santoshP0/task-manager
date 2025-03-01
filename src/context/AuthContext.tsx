@@ -1,12 +1,13 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
-import { LoginAuth } from '../services/authService';
+import { LoginAuth, SignupAuth } from '../services/authService';
 import Loader from '../components/Loader';
 
 interface AuthContextType {
   userToken: string | null;
   login: (username: string, password: string) => Promise<void>;
+  signup: (username: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
 }
@@ -42,6 +43,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       alert('Login Failed: ' + error.message);
     }
   };
+  const signup = async (username: string, email: string, password: string) => {
+    try {
+      setLoading(true);
+      const response = await SignupAuth(username, email, password);
+      if(response.status === 200) {
+
+        }
+        setLoading(false);
+    } catch (error: any) {
+      setLoading(false);
+      alert('signup Failed: ' + error.message);
+    }
+  };
 
   const logout = async () => {
     await AsyncStorage.removeItem('userToken');
@@ -52,7 +66,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return <Loader />;
   }
 
-  return <AuthContext.Provider value={{ userToken, login, logout, loading }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ userToken, login, signup, logout, loading }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextType => {
