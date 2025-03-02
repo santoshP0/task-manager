@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { View, StyleSheet, FlatList, RefreshControl, Alert } from "react-native";
-import { Button, Card, Title, IconButton } from "react-native-paper";
+import { Card, Title, IconButton, FAB } from "react-native-paper";
 import { useTasks } from "../context/TaskContext";
 import { useAuth } from "../context/AuthContext";
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
@@ -57,7 +57,10 @@ const HomeScreen = () => {
         ref={(ref) => (swipeableRefs.current[item.id] = ref)}
         renderRightActions={() => renderRightActions(item._id)}
       >
-        <Card style={styles.card} onPress={() => navigation.navigate("TaskDetails", { screenType : "view", task: item })}>
+        <Card
+          style={styles.card}
+          onPress={() => navigation.navigate("TaskDetails", { screenType: "view", task: item })}
+        >
           <Card.Content>
             <Title style={styles.taskTitle}>
               <FontAwesome6 name="clipboard-list" size={18} color="black" /> {item.title}
@@ -79,22 +82,18 @@ const HomeScreen = () => {
         />
       </View>
 
-      <Button
-        mode="contained"
-        icon={() => <FontAwesome6 name="plus" size={18} color="white" />}
-        onPress={() => {
-          navigation.navigate("TaskDetails", { screenType : "new" });
-        }}
-        style={styles.addButton}
-      >
-        Add Task
-      </Button>
-
       <FlatList
         data={tasks}
         keyExtractor={(item: any) => item._id}
         renderItem={renderSwipeableRow}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchTasks} />}
+        contentContainerStyle={{ paddingBottom: 80 }}
+      />
+      <FAB
+        icon="plus"
+        color="white"
+        onPress={() => navigation.navigate("TaskDetails", { screenType: "new" })}
+        style={styles.fab}
       />
     </View>
   );
@@ -118,9 +117,6 @@ const styles = StyleSheet.create({
   logoutButton: {
     marginRight: 5,
   },
-  addButton: {
-    marginBottom: 15,
-  },
   card: {
     marginBottom: 10,
     elevation: 3,
@@ -136,6 +132,12 @@ const styles = StyleSheet.create({
     width: 80,
     height: "80%",
     borderRadius: 10,
+  },
+  fab: {
+    position: "absolute",
+    right: 20,
+    bottom: 20,
+    backgroundColor: "#6200EE"
   },
 });
 

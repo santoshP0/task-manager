@@ -49,6 +49,7 @@ const TaskDetailsScreen: React.FC<any> = ({ route, navigation }) => {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Appbar.Content title={isNew ? 'Add Task' : task?.title || 'Task Details'} />
+        {!isEditing && <Appbar.Action icon="delete" onPress={handleDelete} />}
       </Appbar.Header>
 
       <Card mode="elevated" style={styles.card}>
@@ -79,20 +80,19 @@ const TaskDetailsScreen: React.FC<any> = ({ route, navigation }) => {
           <View style={styles.buttonContainer}>
             {isEditing ? (
               <>
-                <Button mode="contained" onPress={handleSubmit}>
-                  Save
-                </Button>
-                <Button mode="outlined" onPress={handleCancel} textColor="gray">
+              <View style={styles.buttonRow}>
+                <Button mode="outlined" onPress={handleCancel} textColor="gray" style={{width:"45%"}}>
                   Cancel
                 </Button>
+                <Button mode="contained" onPress={handleSubmit} style={{width:"45%"}}>
+                  Save
+                </Button>
+                </View>
               </>
             ) : (
               <>
                 <Button mode="contained" onPress={() => setIsEditing(true)}>
                   Edit
-                </Button>
-                <Button mode="contained" onPress={handleDelete} buttonColor="red">
-                  Delete
                 </Button>
               </>
             )}
@@ -109,6 +109,10 @@ const styles = StyleSheet.create({
   input: { marginBottom: 10 },
   descriptionInput: { marginBottom: 10, minHeight: 250, textAlignVertical: 'top' },
   buttonContainer: { marginTop: 20, gap: 10 },
+  buttonRow:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  }
 });
 
 export default TaskDetailsScreen;
