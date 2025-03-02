@@ -60,7 +60,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         { title, description },
         { headers: { Authorization: `Bearer ${userToken}` } }
       );
-      if (response.status === 200) {
+      if (response.status == 201) {
         setTasks((prevTasks) => [...prevTasks, response.data]);
       }
       return { status: response.status, data: response.data };

@@ -57,7 +57,7 @@ const HomeScreen = () => {
         ref={(ref) => (swipeableRefs.current[item.id] = ref)}
         renderRightActions={() => renderRightActions(item._id)}
       >
-        <Card style={styles.card} onPress={() => console.log("task clicked")}>
+        <Card style={styles.card} onPress={() => navigation.navigate("TaskDetails", { screenType : "view", task: item })}>
           <Card.Content>
             <Title style={styles.taskTitle}>
               <FontAwesome6 name="clipboard-list" size={18} color="black" /> {item.title}
@@ -83,7 +83,7 @@ const HomeScreen = () => {
         mode="contained"
         icon={() => <FontAwesome6 name="plus" size={18} color="white" />}
         onPress={() => {
-          navigation.navigate("TaskDetails");
+          navigation.navigate("TaskDetails", { screenType : "new" });
         }}
         style={styles.addButton}
       >
@@ -104,7 +104,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 50,
   },
   header: {
     flexDirection: "row",

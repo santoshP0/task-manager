@@ -13,7 +13,7 @@ type RootStackParamList = {
   Home: HomeStackParamList;
 };
 
-type HomeStackParamList = {
+export type HomeStackParamList = {
   HomeScreen: undefined;
   TaskDetails: undefined;
 };
