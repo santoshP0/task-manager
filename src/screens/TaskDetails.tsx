@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { View, StyleSheet, ActivityIndicator, Text } from "react-native";
 import { TextInput, Button, Card, Appbar } from "react-native-paper";
 import { useTasks } from "../context/TaskContext";
 
@@ -13,16 +13,29 @@ const TaskDetailsScreen: React.FC<any> = ({ route, navigation }) => {
   const [title, setTitle] = useState(task?.title || "");
   const [description, setDescription] = useState(task?.description || "");
   const [isEditing, setIsEditing] = useState(isNew);
+  const [errorMessage, setErrorMessage] = useState(""); // ✅ Error message state
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, []);
 
   const handleSubmit = async () => {
+    setErrorMessage("");
+    if (!title.trim() || !description.trim()) {
+      setErrorMessage("Title and Description cannot be empty.");
+      return;
+    }
+    if (!isNew) {
+      const latestTask = getTaskById(task?._id);
+      if (latestTask?.title === title.trim() && latestTask?.description === description.trim()) {
+        setErrorMessage("No changes detected.");
+        return;
+      }
+    }
     if (isNew) {
-      await addTask(title, description);
+      await addTask(title.trim(), description.trim());
     } else {
-      await updateTask(task?._id, title, description);
+      await updateTask(task?._id, title.trim(), description.trim());
     }
     navigation.goBack();
   };
@@ -39,6 +52,7 @@ const TaskDetailsScreen: React.FC<any> = ({ route, navigation }) => {
       setDescription(latestTask?.description || "");
     }
     setIsEditing(false);
+    setErrorMessage("");
   };
 
   return (
@@ -46,7 +60,7 @@ const TaskDetailsScreen: React.FC<any> = ({ route, navigation }) => {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} disabled={loading} />
         <Appbar.Content title={isNew ? "Add Task" : task?.title || "Task Details"} />
-        {!isEditing && (
+        {!isEditing && !isNew && (
           <Appbar.Action icon="delete" onPress={handleDelete} disabled={loading} />
         )}
       </Appbar.Header>
@@ -73,13 +87,29 @@ const TaskDetailsScreen: React.FC<any> = ({ route, navigation }) => {
             style={styles.descriptionInput}
           />
 
+          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
           <View style={styles.buttonContainer}>
             {isEditing ? (
               <View style={styles.buttonRow}>
-                <Button mode="outlined" onPress={handleCancel} textColor="gray" style={styles.button} disabled={loading}>
-                  Cancel
-                </Button>
-                <Button mode="contained" onPress={handleSubmit} loading={loading} style={styles.button} disabled={loading}>
+                {!isNew && (
+                  <Button
+                    mode="outlined"
+                    onPress={handleCancel}
+                    textColor="gray"
+                    style={styles.button}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  mode="contained"
+                  onPress={handleSubmit}
+                  loading={loading}
+                  style={styles.button}
+                  disabled={loading}
+                >
                   Save
                 </Button>
               </View>
@@ -108,6 +138,7 @@ const styles = StyleSheet.create({
   buttonContainer: { marginTop: 20, gap: 10 },
   buttonRow: { flexDirection: "row", justifyContent: "space-between" },
   button: { width: "45%" },
+  errorText: { color: "red", textAlign: "center", marginTop: 5 },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
