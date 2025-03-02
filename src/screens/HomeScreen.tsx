@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { View, StyleSheet, FlatList, RefreshControl, Alert } from "react-native";
+import { View, StyleSheet, FlatList, RefreshControl, Alert, Text } from "react-native";
 import { Card, Title, IconButton, FAB } from "react-native-paper";
 import { useTasks } from "../context/TaskContext";
 import { useAuth } from "../context/AuthContext";
@@ -88,6 +88,18 @@ const HomeScreen = () => {
         renderItem={renderSwipeableRow}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchTasks} />}
         contentContainerStyle={{ paddingBottom: 80 }}
+        ListEmptyComponent={
+          !loading ? (
+            <View style={{ alignItems: 'center', marginTop: 50 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'gray' }}>
+                No tasks available
+              </Text>
+              <Text style={{ fontSize: 14, color: 'gray', marginTop: 5 }}>
+                Add a new task to get started!
+              </Text>
+            </View>
+          ) : null
+        }
       />
       <FAB
         icon="plus"

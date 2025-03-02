@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext, ReactNode } from
 import { useAuth } from './AuthContext';
 import { API_BASE_URL } from '../services/config';
 import axios from 'axios';
+import { Snackbar } from 'react-native-paper';
 
 interface Task {
   id: string;
@@ -29,6 +30,15 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const { userToken } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string }>({
+    visible: false,
+    message: '',
+  });
+
+  // Function to show Snackbar
+  const showSnackbar = (message: string) => {
+    setSnackbar({ visible: true, message });
+  };
 
   // Fetch Tasks
   const fetchTasks = async (): Promise<APIResponse> => {
@@ -39,14 +49,16 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       if (response.status === 200) {
         setTasks(response.data);
-      }else {
-        console.error("Error fetching tasks: Unexpected response status", response.status);
+        showSnackbar('Tasks fetched successfully');
+      } else {
+        console.error('Error fetching tasks: Unexpected response status', response.status);
       }
       return { status: response.status, data: response.data };
     } catch (error: any) {
+      showSnackbar('Failed to fetch tasks');
       console.error('Error fetching tasks:', error);
       return { status: error.response?.status || 500, data: error.response?.data || { error: error.message } };
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -60,14 +72,16 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         { title, description },
         { headers: { Authorization: `Bearer ${userToken}` } }
       );
-      if (response.status == 201) {
+      if (response.status === 201) {
         setTasks((prevTasks) => [...prevTasks, response.data]);
+        showSnackbar('Task added successfully');
       }
       return { status: response.status, data: response.data };
     } catch (error: any) {
+      showSnackbar('Failed to add task');
       console.error('Error adding task:', error);
       return { status: error.response?.status || 500, data: error.response?.data || { error: error.message } };
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -82,13 +96,15 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         { headers: { Authorization: `Bearer ${userToken}` } }
       );
       if (response.status === 200) {
-        setTasks((prevTasks) => prevTasks.map((task: any) => (task._id === id ? response.data : task)));
+        setTasks((prevTasks) => prevTasks.map((task:any) => (task._id === id ? response.data : task)));
+        showSnackbar('Task updated successfully');
       }
       return { status: response.status, data: response.data };
     } catch (error: any) {
+      showSnackbar('Failed to update task');
       console.error('Error updating task:', error);
       return { status: error.response?.status || 500, data: error.response?.data || { error: error.message } };
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -102,16 +118,17 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       if (response.status === 200) {
         setTasks((prevTasks) => prevTasks.filter((task: any) => task._id !== id));
+        showSnackbar('Task deleted successfully');
       }
       return { status: response.status, data: response.data };
     } catch (error: any) {
+      showSnackbar('Failed to delete task');
       console.error('Error deleting task:', error);
       return { status: error.response?.status || 500, data: error.response?.data || { error: error.message } };
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
-  
 
   useEffect(() => {
     if (userToken) fetchTasks();
@@ -120,6 +137,14 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   return (
     <TaskContext.Provider value={{ loading, tasks, fetchTasks, addTask, updateTask, deleteTask }}>
       {children}
+      {/* Snackbar for showing messages */}
+      <Snackbar
+        visible={snackbar.visible}
+        onDismiss={() => setSnackbar({ visible: false, message: '' })}
+        duration={3000} // Auto dismiss after 3 seconds
+      >
+        {snackbar.message}
+      </Snackbar>
     </TaskContext.Provider>
   );
 };
