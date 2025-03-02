@@ -18,7 +18,7 @@ A simple **React Native Task Manager** that allows users to create, update, and 
 
 ### 1️⃣ Clone the Repository
 ```sh
-git clone https://github.com/your-repo/task-manager-app.git
+git clone https://github.com/santoshP0/task-manager.git
 cd task-manager-app
 ```
 
